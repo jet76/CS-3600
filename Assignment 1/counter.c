@@ -11,19 +11,19 @@ int main(int argc, char *argv[]) {
         perror("getpid error");
         exit(errno);
     }
-    assert(printf("Child PID: %d\n", child) >= 0);
+    assert(printf("Child PID: %d\n", child) != 0);
     int parent = getppid();
     if(parent < 0){
         perror("getppid error");
         exit(errno);
     }
-    assert(printf("Parent PID: %d\n", parent) >= 0);
+    assert(printf("Parent PID: %d\n", parent) != 0);
     long n = 0;
     if(argc > 1){
         char *endptr;
         n = strtol(argv[1], &endptr, 0);
         for(int i = 1; i <= n; i++){
-            assert(printf("Process: %d %d\n", child, i) >= 0);
+            assert(printf("Process: %d %d\n", child, i) != 0);
         }
     }
     return n;
