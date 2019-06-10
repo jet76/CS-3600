@@ -16,7 +16,7 @@ int main() {
         exit(errno);
     }
     else if(f == 0){
-        int n = execl("counter", "5", NULL);
+        int n = execl("counter", "counter", "5", NULL);
         if(n == -1){
             perror("execl error");
             exit(errno);
@@ -28,7 +28,7 @@ int main() {
             perror("waitpid error");
             exit(errno);
         }  
-        assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) > 0); 
+        assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0); 
     }
     return 0;
 }
