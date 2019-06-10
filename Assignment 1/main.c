@@ -28,7 +28,7 @@ int main() {
             perror("waitpid error");
             exit(errno);
         }  
-        assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0); 
+        assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) >= 0); 
     }
     return 0;
 }
