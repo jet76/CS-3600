@@ -1,4 +1,3 @@
-/* Help from Conor McCandless */
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
