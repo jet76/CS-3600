@@ -22,12 +22,10 @@ int main() {
         }
     }
     else{
-        wait = waitpid(f, &status, 0);
-        if(wait == -1){
-            perror("waitpid error");
-            exit(errno);
-        }  
-        assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0); 
+        assert(wait = waitpid(f, &status, 0) >= 0);
+        if(WIFEXITED(status)){
+            assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0); 
+        }
     }
     return 0;
 }
