@@ -40,7 +40,7 @@ int main(){
         exit(errno);
     }
     else if(f == 0){
-        int n = execl("child", "cnild", NULL);
+        int n = execl("child", "child", NULL);
         if(n == -1){
             perror("execl error");
             exit(errno);

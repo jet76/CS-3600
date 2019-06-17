@@ -6,8 +6,8 @@
 #include <unistd.h>
 
 int main(){
-    assert(kill(getppid(), SIGURG) >= 0);
-    assert(kill(getppid(), SIGUSR1) >= 0);
-    assert(kill(getppid(), SIGUSR2) >= 0);
+    assert(kill(getppid(), SIGURG) == 0);
+    assert(kill(getppid(), SIGUSR1) == 0);
+    assert(kill(getppid(), SIGUSR2) == 0);
     return 0;
 }
