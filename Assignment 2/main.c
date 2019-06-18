@@ -33,7 +33,6 @@ int main(){
     assert(sigaction(SIGURG, &action, NULL) == 0);
 
     int status;
-    pid_t wait;
     pid_t f = fork();
     if(f == -1){
         perror("fork error");
@@ -47,9 +46,9 @@ int main(){
         }
     }
     else{
-        assert(wait = waitpid(f, &status, 0) >= 0);
+        assert(waitpid(f, &status, 0) >= 0);
         if(WIFEXITED(status)){
-            assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0); 
+            assert(printf("\nProcess %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0); 
         }
     }
     return 0;
