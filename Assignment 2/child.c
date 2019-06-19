@@ -6,8 +6,12 @@
 #include <unistd.h>
 
 int main(){
-    assert(kill(getppid(), SIGURG) == 0);
-    assert(kill(getppid(), SIGUSR1) == 0);
-    assert(kill(getppid(), SIGUSR2) == 0);
+    pid_t parent;
+    assert((parent = getppid()) >= 0);
+    assert(kill(parent, SIGURG) == 0);
+    assert(kill(parent, SIGURG) == 0);
+    assert(kill(parent, SIGURG) == 0);
+    assert(kill(parent, SIGUSR1) == 0);
+    assert(kill(parent, SIGUSR2) == 0);
     return 0;
 }
