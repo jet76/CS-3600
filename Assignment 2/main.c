@@ -1,4 +1,4 @@
-#define _GNU_SOURCE
+#define _GNU_SOURCE // https://github.com/Microsoft/vscode/issues/71012
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
@@ -7,22 +7,22 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
-
-static int sigurg_count, sigusr1_count, siguser2_count;
+#include <string.h>
 
 void handler(int sig){
+    char *msg;
     switch(sig){
         case SIGURG:
-            assert(printf("Received SIGURG (%d)\n", sig) != 0);
-            sigurg_count += 1;
+            msg = "Received SIGURG\n";
+            assert(write(1, msg, strlen(msg)) >= 0);
             break;
         case SIGUSR1:
-            assert(printf("Received SIGUSR1 (%d)\n", sig) != 0);
-            sigusr1_count += 1;
+            msg = "Received SIGUSR1\n";
+            assert(write(1, msg, strlen(msg)) >= 0);
             break;
         case SIGUSR2:
-            assert(printf("Received SIGUSR2 (%d)\n", sig) != 0);
-            siguser2_count += 1;
+            msg = "Received SIGUSR2\n";
+            assert(write(1, msg, strlen(msg)) >= 0);
             break;
     }
 }
@@ -53,8 +53,7 @@ int main(){
     else{
         assert(waitpid(f, &status, 0) >= 0);
         if(WIFEXITED(status)){
-            assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0); 
-            assert(printf("SIGURG: %d, SIGUSR1: %d, SIGUSR2: %d\n", sigurg_count, sigusr1_count, siguser2_count) != 0);
+            assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0);
         }
     }
     return 0;
