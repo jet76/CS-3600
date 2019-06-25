@@ -34,21 +34,20 @@ int main(){
             perror("execl error");
             exit(errno);
         }
-        char stop[] = "Parent is going to SIGSTOP the child\n.";
-        char start[] = "Parent is going to SIGCONT the child.\n";
-        for(int i = 0; i < 5; i++){            
-            syscall(write(1, stop, strlen(stop)));
+    }
+    else{
+        assert(waitpid(f, &status, WNOHANG | WCONTINUED) >= 0);
+        for (int i = 0; i < 5; i++)
+        {
+            assert(printf("Parent is going to SIGSTOP the child.\n") != 0);
             assert(kill(f, SIGSTOP) == 0);
             sleep(2);
-            syscall(write(1, start, strlen(start)));
+            assert(printf("Parent is going to SIGCONT the child.\n") != 0);
             assert(kill(f, SIGCONT) == 0);
             sleep(2);
         }
         assert(kill(f, SIGINT) == 0);
-    }
-    else{
-        assert(waitpid(f, &status, WNOHANG) >= 0);
-        if(WIFSIGNALED(status)){
+        if(WIFEXITED(status)){
             assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0);
         }
     }
