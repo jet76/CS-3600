@@ -10,21 +10,7 @@
 #include <string.h>
 
 void handler(int sig){
-    char *msg;
-    switch(sig){
-        case SIGURG:
-            msg = "Received SIGURG\n";
-            assert(write(1, msg, strlen(msg)) >= 0);
-            break;
-        case SIGUSR1:
-            msg = "Received SIGUSR1\n";
-            assert(write(1, msg, strlen(msg)) >= 0);
-            break;
-        case SIGUSR2:
-            msg = "Received SIGUSR2\n";
-            assert(write(1, msg, strlen(msg)) >= 0);
-            break;
-    }
+    
 }
 
 int main(){
@@ -32,10 +18,8 @@ int main(){
     struct sigaction action;
     action.sa_handler = handler;
     sigemptyset(&action.sa_mask);
-    action.sa_flags = SA_RESTART;
-    assert(sigaction(SIGUSR1, &action, NULL) == 0);
-    assert(sigaction(SIGUSR2, &action, NULL) == 0);
-    assert(sigaction(SIGURG, &action, NULL) == 0);
+    action.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    assert(sigaction(SIGCHLD, &action, NULL) == 0);
 
     int status;
     pid_t f = fork();
