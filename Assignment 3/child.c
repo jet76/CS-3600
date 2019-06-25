@@ -6,12 +6,11 @@
 #include <unistd.h>
 
 int main(){
-    pid_t parent;
-    assert((parent = getppid()) >= 0);
-    assert(kill(parent, SIGURG) == 0);
-    assert(kill(parent, SIGURG) == 0);
-    assert(kill(parent, SIGURG) == 0);
-    assert(kill(parent, SIGUSR1) == 0);
-    assert(kill(parent, SIGUSR2) == 0);
+    pid_t child;
+    assert((child = getpid()) >= 0);
+    while(1){ // https://stackoverflow.com/questions/30678905/what-is-the-proper-equivalent-of-whiletrue-in-plain-c
+        assert(printf("Awake in %d\n", child) != 0);
+        sleep(1);
+    }
     return 0;
 }
