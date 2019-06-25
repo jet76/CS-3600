@@ -47,7 +47,7 @@ int main(){
         assert(kill(f, SIGINT) == 0);
     }
     else{
-        assert(waitpid(f, &status, 0) >= 0);
+        assert(waitpid(f, &status, WNOHANG) >= 0);
         if(WIFSIGNALED(status)){
             assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0);
         }
