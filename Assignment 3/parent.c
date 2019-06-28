@@ -9,17 +9,19 @@
 #include <signal.h>
 #include <string.h>
 #include "syscall.h"
-#include "eye2eh.c"
 
 int status;
 pid_t f;
 
-void handler(int sig){    
+int eye2eh(int i, char *buffer, int buffersize, int base);
+
+void handler(int sig)
+{
     if (WIFEXITED(status)){
         WRITESTRING("Process ");
-        WRITEINT(f, 5);
+        WRITEINT(f, 6);
         WRITESTRING(" exited with status: ");
-        WRITEINT(WEXITSTATUS(status), 1);
+        WRITEINT(WEXITSTATUS(status), 2);
         WRITESTRING("\n");
     }
     exit(0);
@@ -33,7 +35,6 @@ int main(){
     action.sa_flags = SA_RESTART | SA_NOCLDSTOP;
     assert(sigaction(SIGCHLD, &action, NULL) == 0);
 
-    
     f = fork();
     if(f == -1){
         perror("fork error");
@@ -60,4 +61,5 @@ int main(){
         assert(kill(f, SIGINT) == 0);
         assert(pause() >= 0);
     }
+    return 0;
 }
