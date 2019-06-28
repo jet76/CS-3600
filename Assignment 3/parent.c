@@ -8,10 +8,21 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <string.h>
-#include <syscall.h>
+#include "syscall.h"
+#include "eye2eh.c"
 
-void handler(int sig){
-    
+int status;
+pid_t f;
+
+void handler(int sig){    
+    if (WIFEXITED(status)){
+        WRITESTRING("Process ");
+        WRITEINT(f, 5);
+        WRITESTRING(" exited with status: ");
+        WRITEINT(WEXITSTATUS(status), 1);
+        WRITESTRING("\n");
+    }
+    exit(0);
 }
 
 int main(){
@@ -22,8 +33,8 @@ int main(){
     action.sa_flags = SA_RESTART | SA_NOCLDSTOP;
     assert(sigaction(SIGCHLD, &action, NULL) == 0);
 
-    int status;
-    pid_t f = fork();
+    
+    f = fork();
     if(f == -1){
         perror("fork error");
         exit(errno);
@@ -36,7 +47,7 @@ int main(){
         }
     }
     else{
-        assert(waitpid(f, &status, WNOHANG | WCONTINUED) >= 0);
+        assert(waitpid(f, &status, WNOHANG) >= 0);
         for (int i = 0; i < 5; i++)
         {
             assert(printf("Parent is going to SIGSTOP the child.\n") != 0);
@@ -47,9 +58,6 @@ int main(){
             sleep(2);
         }
         assert(kill(f, SIGINT) == 0);
-        if(WIFEXITED(status)){
-            assert(printf("Process %d exited with status: %d\n", f, WEXITSTATUS(status)) != 0);
-        }
+        assert(pause() >= 0);
     }
-    return 0;
 }
