@@ -17,11 +17,12 @@ int eye2eh(int i, char *buffer, int buffersize, int base);
 
 void handler(int sig)
 {
-    if (WIFEXITED(status)){
+    assert(waitpid(f, &status, WNOHANG) >= 0);
+    if (WIFSIGNALED(status)){
         WRITESTRING("Process ");
         WRITEINT(f, 6);
         WRITESTRING(" exited with status: ");
-        WRITEINT(WEXITSTATUS(status), 2);
+        WRITEINT(WTERMSIG(status), 2);
         WRITESTRING("\n");
     }
     exit(0);
@@ -48,7 +49,6 @@ int main(){
         }
     }
     else{
-        assert(waitpid(f, &status, WNOHANG) >= 0);
         for (int i = 0; i < 5; i++)
         {
             assert(printf("Parent is going to SIGSTOP the child.\n") != 0);
