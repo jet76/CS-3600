@@ -84,6 +84,8 @@ typedef enum { false, true } bool;
 #define PROCESSTABLESIZE 10
 struct PCB processes[PROCESSTABLESIZE];
 
+int l = sizeof(processes) / sizeof(processes[0]);
+
 struct PCB idle;
 struct PCB *running;
 
@@ -149,7 +151,6 @@ void scheduler (int signum) {
     WRITESTRING("---- entering scheduler\n");
     assert(signum == SIGALRM);
 
-    int l = sizeof(processes) / sizeof(processes[0]);
     int last;
     if(strcmp(running->name, "IDLE") == 0){
         idle.state = READY;
@@ -251,8 +252,36 @@ void process_done (int signum) {
     WRITESTRING("---- entering process_done\n");
     assert (signum == SIGCHLD);
 
-    WRITESTRING ("Timer died, cleaning up and killing everything\n");
-    systemcall(kill(0, SIGTERM));
+    int status;
+    int p = waitpid(-1, &status, 0);
+    bool done = true;
+    for(int i = 0; i < l; i++){
+        if(processes[i].name != NULL && processes[i].pid == p){
+            done = false;
+            WRITESTRING("Process: ");
+            WRITESTRING(processes[i].name);
+            WRITESTRING(" ");
+            WRITEINT(processes[i].pid, 6);
+            WRITESTRING("\nInterrupts: ");
+            WRITEINT(processes[i].interrupts, 6);
+            WRITESTRING("\nContext switches: ");
+            WRITEINT(processes[i].switches, 6);
+            WRITESTRING("\nTime: ");
+            WRITESTRING("\n");
+            processes[i].state = TERMINATED;
+            WRITESTRING("Continuing idle: ");
+            WRITEINT(idle.pid, 6);
+            WRITESTRING("\n");
+            running = &idle;
+            idle.state = RUNNING;
+            systemcall(kill(idle.pid, SIGCONT));
+            break;
+        }
+    }
+    if(done == true){
+        WRITESTRING ("Timer died, cleaning up and killing everything\n");
+        systemcall(kill(0, SIGTERM));
+    }
 
     WRITESTRING ("---- leaving process_done\n");
 }
