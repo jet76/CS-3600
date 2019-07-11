@@ -267,6 +267,7 @@ void process_done (int signum) {
             WRITESTRING("\nContext switches: ");
             WRITEINT(processes[i].switches, 6);
             WRITESTRING("\nTime: ");
+            //WRITEINT(sys_time - processes[i].started, 20);
             WRITESTRING("\n");
             processes[i].state = TERMINATED;
             WRITESTRING("Continuing idle: ");
