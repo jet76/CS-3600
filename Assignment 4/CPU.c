@@ -146,67 +146,105 @@ void create_handler(int signum, struct sigaction action, void(*handler)(int)) {
 }
 
 void scheduler (int signum) {
-    //WRITESTRING("---- entering scheduler\n");
-    //assert(signum == SIGALRM);
-    //WRITESTRING("Continuing idle: ");
-    //WRITEINT(idle.pid, 6);
-    //WRITESTRING("\n");
-    //running = &idle;
-    //idle.state = RUNNING;
-    //systemcall(kill(idle.pid, SIGCONT));
+    WRITESTRING("---- entering scheduler\n");
+    assert(signum == SIGALRM);
 
-    //WRITESTRING("---- leaving scheduler\n");
-
-    int status;
-    int pid = waitpid(-1, &status, WUNTRACED);
     int l = sizeof(processes) / sizeof(processes[0]);
-    if(pid){
-        WRITESTRING("got pid: ");
-        WRITEINT(pid, 6);
-        WRITESTRING("\n");
+    int last;
+    if(strcmp(running->name, "IDLE") == 0){
+        idle.state = READY;
+        idle.interrupts += 1;
+        last = -1;
+    }
+    else{
         for(int i = 0; i < l; i++){
-            if(processes[i].pid == pid){
-                WRITESTRING("Process: ");
-                WRITEINT(i, 3);
-                WRITESTRING("\n");
+            if(running->pid == processes[i].pid){
                 processes[i].state = READY;
                 processes[i].interrupts += 1;
+                last = i;
             }
         }
     }
-    bool new;
+    bool new = false;
     for(int i = 0; i < l; i++){
-        if (processes[i].name != NULL && processes[i].state == 0)
-        {
-            new = 1;
-            processes[i].state = 1;
+        if(processes[i].name != NULL && processes[i].state == NEW){
+            new = true;
             int f = fork();
-            if (f == -1)
-            {
+            if(f == -1){
                 perror("fork error");
                 exit(errno);
             }
-            else if (f == 0)
-            {
-                processes[i].pid = f;
-                processes[i].ppid = getppid();
+            else if(f == 0){
                 int n = execl(processes[i].name, processes[i].name, NULL);
-                if (n == -1)
-                {
+                if (n == -1){
                     perror("execl error");
                     exit(errno);
                 }
-                else{
-                    processes[i].started = sys_time;
+            }
+            else{
+                processes[i].started = sys_time;
+                processes[i].pid = f;
+                processes[i].state = RUNNING;
+                running = &processes[i];
+                WRITESTRING("Starting: ");
+                WRITESTRING(processes[i].name);
+                WRITESTRING(" ");
+                WRITEINT(processes[i].pid, 6);
+                WRITESTRING("\n");
+            }
+        }
+        if(new){break;}
+    }
+    if(new == false){
+        //bool ready = false;
+        int next = -1;
+        for(int i = last; i < l; i++){            
+            if(processes[i].name != NULL){
+                if(i > last && processes[i].state == READY){
+                    next = i;
+                    break;
                 }
             }
-            running = &processes[i];
-            //WRITESTRING("new\n");
+        }
+        if(next == -1){
+            for (int i = 0; i < l; i++){
+                if (processes[i].name != NULL){
+                    if (i <= last && processes[i].state == READY){
+                        next = i;
+                        break;
+                    }
+                }
+            }
+        }
+        //WRITESTRING("Last: ");
+        //WRITEINT(last, 3);
+        //WRITESTRING("\n");
+        //WRITESTRING("Next: ");
+        //WRITEINT(next, 3);
+        //WRITESTRING("\n");
+        if(next != -1){
+            assert(kill(processes[next].pid, SIGCONT) == 0);
+            processes[next].state = RUNNING;
+            if (next != last){
+                processes[next].switches += 1;
+            }
+            running = &processes[next];
+            WRITESTRING("Countinuing ");
+            WRITESTRING(processes[next].name);
+            WRITESTRING(" : ");
+            WRITEINT(processes[next].pid, 6);
+            WRITESTRING("\n");
+        }
+        else {
+            WRITESTRING("Continuing idle: ");
+            WRITEINT(idle.pid, 6);
+            WRITESTRING("\n");
+            running = &idle;
+            idle.state = RUNNING;
+            systemcall(kill(idle.pid, SIGCONT));
         }
     }
-    if(new == 0){
-
-    }
+    WRITESTRING("---- leaving scheduler\n");
 }
 
 void process_done (int signum) {
@@ -261,7 +299,7 @@ int main(int argc, char **argv) {
             int p = i - 1;
             processes[p].state = NEW;
             processes[p].name = argv[i];
-            //printf("%s\n", pcb.name);
+            processes[p].ppid = getpid();
             processes[p].interrupts = 0;
             processes[p].switches = 0;
         }
