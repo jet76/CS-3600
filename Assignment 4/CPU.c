@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <assert.h>
+#include <time.h>
 #include "systemcall.h"
 
 /*
@@ -183,7 +184,7 @@ void scheduler (int signum) {
                 }
             }
             else{
-                processes[i].started = sys_time;
+                assert((processes[i].started = time(NULL)) != -1);
                 processes[i].pid = f;
                 processes[i].state = RUNNING;
                 running = &processes[i];
@@ -217,17 +218,12 @@ void scheduler (int signum) {
                 }
             }
         }
-        //WRITESTRING("Last: ");
-        //WRITEINT(last, 3);
-        //WRITESTRING("\n");
-        //WRITESTRING("Next: ");
-        //WRITEINT(next, 3);
-        //WRITESTRING("\n");
         if(next != -1){
             assert(kill(processes[next].pid, SIGCONT) == 0);
             processes[next].state = RUNNING;
             if (next != last){
-                processes[next].switches += 1;
+                //processes[last].switches += 1;
+                processes[last].switches += 1;
             }
             running = &processes[next];
             WRITESTRING("Countinuing ");
@@ -242,6 +238,11 @@ void scheduler (int signum) {
             WRITESTRING("\n");
             running = &idle;
             idle.state = RUNNING;
+            if (next != last)
+            {
+                //idle.switches += 1;
+                processes[last].switches += 1;
+            }
             systemcall(kill(idle.pid, SIGCONT));
         }
     }
@@ -267,7 +268,7 @@ void process_done (int signum) {
             WRITESTRING("\nContext switches: ");
             WRITEINT(processes[i].switches, 6);
             WRITESTRING("\nTime: ");
-            //WRITEINT(sys_time - processes[i].started, 20);
+            WRITEINT(time(NULL) - processes[i].started, 20);
             WRITESTRING("\n");
             processes[i].state = TERMINATED;
             WRITESTRING("Continuing idle: ");
@@ -318,9 +319,6 @@ void create_idle() {
 }
 
 int main(int argc, char **argv) {
-
-    //int l = sizeof(processes) / sizeof(processes[0]);
-    //printf("%d\n", l);
 
     if (argc > 0)
     {
